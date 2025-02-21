@@ -1,5 +1,5 @@
 use crate::bindings;
-use crate::core::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
+use crate::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
 
 struct MCC118DeviceInfo {
     pub num_ai_channels: u8,
