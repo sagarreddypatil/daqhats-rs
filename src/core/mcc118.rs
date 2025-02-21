@@ -1,4 +1,4 @@
-use crate::bindings;
+use crate::core::bindings;
 use crate::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
 
 pub struct Mcc118DeviceInfo {
