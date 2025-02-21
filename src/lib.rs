@@ -1,6 +1,8 @@
 mod bindings;
 mod mcc118;
 
+use mcc118::Mcc118;
+
 use bitflags::bitflags;
 
 pub fn result_c_to_rs(code: i32) -> Result<(), ErrorCode> {

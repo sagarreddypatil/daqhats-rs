@@ -1,7 +1,7 @@
 use crate::bindings;
 use crate::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
 
-struct MCC118DeviceInfo {
+struct Mcc118DeviceInfo {
     pub num_ai_channels: u8,
     pub ai_min_code: u16,
     pub ai_max_code: u16,
@@ -11,9 +11,9 @@ struct MCC118DeviceInfo {
     pub ai_max_range: f64,
 }
 
-impl From<bindings::MCC118DeviceInfo> for MCC118DeviceInfo {
+impl From<bindings::MCC118DeviceInfo> for Mcc118DeviceInfo {
     fn from(info: bindings::MCC118DeviceInfo) -> Self {
-        MCC118DeviceInfo {
+        Mcc118DeviceInfo {
             num_ai_channels: info.NUM_AI_CHANNELS,
             ai_min_code: info.AI_MIN_CODE,
             ai_max_code: info.AI_MAX_CODE,
@@ -25,14 +25,14 @@ impl From<bindings::MCC118DeviceInfo> for MCC118DeviceInfo {
     }
 }
 
-struct MCC118 {
+pub struct Mcc118 {
     pub address: u8,
 }
 
-impl MCC118 {
-    pub fn open(address: u8) -> Result<MCC118, ErrorCode> {
+impl Mcc118 {
+    pub fn open(address: u8) -> Result<Mcc118, ErrorCode> {
         let res = unsafe { bindings::mcc118_open(address) };
-        result_c_to_rs(res).map(|_| MCC118 { address })
+        result_c_to_rs(res).map(|_| Mcc118 { address })
     }
 
     pub fn close(self) -> Result<(), ErrorCode> {
@@ -154,9 +154,13 @@ impl MCC118 {
         let res = unsafe { bindings::mcc118_a_in_scan_cleanup(self.address) };
         result_c_to_rs(res)
     }
+
+    pub fn info() -> Mcc118DeviceInfo {
+        unsafe { (*bindings::mcc118_info()).into() }
+    }
 }
 
-impl Drop for MCC118 {
+impl Drop for Mcc118 {
     fn drop(&mut self) {
         unsafe { bindings::mcc118_close(self.address) };
     }
