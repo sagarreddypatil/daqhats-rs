@@ -1,5 +1,7 @@
-use crate::core::bindings;
-use crate::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
+use super::bindings;
+use super::{AIn, AInScanner};
+use super::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
+
 
 pub struct Mcc118DeviceInfo {
     pub num_ai_channels: u8,
@@ -83,42 +85,50 @@ impl Mcc118 {
         result_c_to_rs(res)
     }
 
-    pub fn a_in_read(&mut self, channel: u8, options: ScanOptions) -> Result<f64, ErrorCode> {
-        let mut value = 0.0;
-        let res = unsafe { bindings::mcc118_a_in_read(self.address, channel, options.bits(), &mut value) };
-        result_c_to_rs(res).map(|_| value)
-    }
-
     pub fn trigger_mode(&mut self, mode: TriggerMode) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_trigger_mode(self.address, mode as u8) };
         result_c_to_rs(res)
     }
 
-    pub fn a_in_scan_actual_rate(channel_count: u8, sample_rate_per_channel: f64) -> Result<f64, ErrorCode> {
+    pub fn info() -> Mcc118DeviceInfo {
+        unsafe { (*bindings::mcc118_info()).into() }
+    }
+}
+
+impl AIn for Mcc118 {
+    fn a_in_read(&mut self, channel: u8, options: ScanOptions) -> Result<f64, ErrorCode> {
+        let mut value = 0.0;
+        let res = unsafe { bindings::mcc118_a_in_read(self.address, channel, options.bits(), &mut value) };
+        result_c_to_rs(res).map(|_| value)
+    }
+}
+
+impl AInScanner for Mcc118 {
+    fn a_in_scan_actual_rate(channel_count: u8, sample_rate_per_channel: f64) -> Result<f64, ErrorCode> {
         let mut actual_sample_rate = 0.0;
         let res = unsafe { bindings::mcc118_a_in_scan_actual_rate(channel_count, sample_rate_per_channel, &mut actual_sample_rate) };
         result_c_to_rs(res).map(|_| actual_sample_rate)
     }
 
-    pub fn a_in_scan_start(&mut self, channel_mask: u8, samples_per_channel: u32, sample_rate_per_channel: f64, options: ScanOptions) -> Result<(), ErrorCode> {
+    fn a_in_scan_start(&mut self, channel_mask: u8, samples_per_channel: u32, sample_rate_per_channel: f64, options: ScanOptions) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_start(self.address, channel_mask, samples_per_channel, sample_rate_per_channel, options.bits()) };
         result_c_to_rs(res)
     }
 
-    pub fn a_in_scan_buffer_size(&self) -> Result<u32, ErrorCode> {
+    fn a_in_scan_buffer_size(&self) -> Result<u32, ErrorCode> {
         let mut size = 0;
         let res = unsafe { bindings::mcc118_a_in_scan_buffer_size(self.address, &mut size) };
         result_c_to_rs(res).map(|_| size)
     }
 
-    pub fn a_in_scan_status(&self) -> Result<(ScanStatus, u32), ErrorCode> {
+    fn a_in_scan_status(&self) -> Result<(ScanStatus, u32), ErrorCode> {
         let mut status = 0;
         let mut samples = 0;
         let res = unsafe { bindings::mcc118_a_in_scan_status(self.address, &mut status, &mut samples) };
         result_c_to_rs(res).map(|_| (ScanStatus::from_bits(status).unwrap(), samples))
     }
 
-    pub fn a_in_scan_read(&mut self, samples_per_channel: i32, timeout_s: f64, buffer: &mut [f64]) -> Result<(ScanStatus, u32), ErrorCode> {
+    fn a_in_scan_read(&mut self, samples_per_channel: i32, timeout_s: f64, buffer: &mut [f64]) -> Result<(ScanStatus, u32), ErrorCode> {
         let mut status: u16 = 0;
         let mut samples_read = 0;
         let res = unsafe {
@@ -136,7 +146,7 @@ impl Mcc118 {
         result_c_to_rs(res).map(|_| (ScanStatus::from_bits(status as u16).unwrap(), samples_read))
     }
 
-    pub fn a_in_scan_channel_count(&self) -> u8 {
+    fn a_in_scan_channel_count(&self) -> u8 {
         let channel_count = unsafe { bindings::mcc118_a_in_scan_channel_count(self.address) };
         assert!(channel_count >= 0);
         assert!(channel_count <= 8);
@@ -144,18 +154,14 @@ impl Mcc118 {
         channel_count as u8
     }
 
-    pub fn a_in_scan_stop(&mut self) -> Result<(), ErrorCode> {
+    fn a_in_scan_stop(&mut self) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_stop(self.address) };
         result_c_to_rs(res)
     }
 
-    pub fn a_in_scan_cleanup(&mut self) -> Result<(), ErrorCode> {
+    fn a_in_scan_cleanup(&mut self) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_cleanup(self.address) };
         result_c_to_rs(res)
-    }
-
-    pub fn info() -> Mcc118DeviceInfo {
-        unsafe { (*bindings::mcc118_info()).into() }
     }
 }
 

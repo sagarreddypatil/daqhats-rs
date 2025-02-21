@@ -184,3 +184,18 @@ pub fn hat_interrupt_callback_disable() -> Result<(), ErrorCode> {
     let res = unsafe { bindings::hat_interrupt_callback_disable() };
     result_c_to_rs(res)
 }
+
+pub trait AIn {
+    fn a_in_read(&mut self, channel: u8, options: ScanOptions) -> Result<f64, ErrorCode>;
+}
+
+pub trait AInScanner {
+    fn a_in_scan_actual_rate(channel_count: u8, sample_rate_per_channel: f64) -> Result<f64, ErrorCode>;
+    fn a_in_scan_start(&mut self, channel_mask: u8, samples_per_channel: u32, sample_rate_per_channel: f64, options: ScanOptions) -> Result<(), ErrorCode>;
+    fn a_in_scan_buffer_size(&self) -> Result<u32, ErrorCode>;
+    fn a_in_scan_status(&self) -> Result<(ScanStatus, u32), ErrorCode>;
+    fn a_in_scan_read(&mut self, samples_per_channel: i32, timeout_s: f64, buffer: &mut [f64]) -> Result<(ScanStatus, u32), ErrorCode>;
+    fn a_in_scan_channel_count(&self) -> u8;
+    fn a_in_scan_stop(&mut self) -> Result<(), ErrorCode>;
+    fn a_in_scan_cleanup(&mut self) -> Result<(), ErrorCode>;
+}

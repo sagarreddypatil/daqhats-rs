@@ -1,5 +1,5 @@
 use anyhow;
-use daqhats::{hat_list, HatId, ScanOptions, ScanStatus, Mcc118};
+use daqhats::core::{hat_list, HatId, ScanOptions, ScanStatus, Mcc118, AInScanner};
 
 fn main() -> anyhow::Result<(), anyhow::Error> {
     let avail_devices = hat_list(HatId::Mcc118);
