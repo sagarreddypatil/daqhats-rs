@@ -1,7 +1,7 @@
 mod bindings;
 mod mcc118;
 
-use mcc118::Mcc118;
+pub use mcc118::Mcc118;
 
 use bitflags::bitflags;
 
@@ -40,6 +40,7 @@ impl From<u16> for HatId {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum ErrorCode {
     BadParameter=bindings::ResultCode_RESULT_BAD_PARAMETER as isize,
     Busy=bindings::ResultCode_RESULT_BUSY as isize,
@@ -66,6 +67,14 @@ impl From<i32> for ErrorCode {
         }
     }
 }
+
+impl std::fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "daqhats error: {}", self.message())
+    }
+}
+
+impl std::error::Error for ErrorCode {}
 
 impl ErrorCode {
     pub fn message(&self) -> &'static str {
