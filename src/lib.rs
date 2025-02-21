@@ -144,7 +144,7 @@ pub fn hat_list(filter_id: HatId) -> Vec<HatInfo> {
     assert!(count < bindings::MAX_NUMBER_HATS as i32);
 
     let count = count as usize;
-    let mut raw_hats = unsafe { std::mem::MaybeUninit::<[bindings::HatInfo; 8]>::uninit() };
+    let mut raw_hats = std::mem::MaybeUninit::<[bindings::HatInfo; 8]>::uninit();
     unsafe {bindings::hat_list(filter_id as u16, raw_hats.as_mut_ptr() as *mut bindings::HatInfo)};
     let raw_hats = unsafe { raw_hats.assume_init() };
 

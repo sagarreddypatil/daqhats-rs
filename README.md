@@ -12,7 +12,6 @@ To cross compile a project that uses this library, you can copy `Dockerfile` and
 
 ```rust
 use anyhow;
-use bitflags::bitflags_match;
 use daqhats::{hat_list, HatId, ScanOptions, ScanStatus, Mcc118};
 
 fn main() -> anyhow::Result<(), anyhow::Error> {
@@ -30,7 +29,7 @@ fn main() -> anyhow::Result<(), anyhow::Error> {
 
     let mut read_buf: [f64; 8000] = [0.0; 8000]; // 1000 samples * 8 possible channels
     let scan_rate: f64 = 1000.0; // Hz
-    let actual_scan_rate = Mcc118::a_in_scan_actual_rate(num_channels, scan_rate);
+    let _actual_scan_rate = Mcc118::a_in_scan_actual_rate(num_channels, scan_rate);
 
     let opts = ScanOptions::CONTINUOUS;
 

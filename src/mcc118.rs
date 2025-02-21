@@ -1,7 +1,7 @@
 use crate::bindings;
 use crate::{ErrorCode, ScanOptions, ScanStatus, TriggerMode, result_c_to_rs};
 
-struct Mcc118DeviceInfo {
+pub struct Mcc118DeviceInfo {
     pub num_ai_channels: u8,
     pub ai_min_code: u16,
     pub ai_max_code: u16,
