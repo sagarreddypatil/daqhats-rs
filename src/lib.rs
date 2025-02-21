@@ -5,13 +5,13 @@ use std::thread::JoinHandle;
 
 #[derive(Copy, Clone, Debug)]
 pub struct ScanOptions {
-    channel_mask: u8,
-    sample_rate_per_channel: f64,
+    pub channel_mask: u8,
+    pub sample_rate_per_channel: f64,
 
-    scale_data: bool,
-    calibrate_data: bool,
-    external_clock: bool,
-    external_trigger: bool,
+    pub scale_data: bool,
+    pub calibrate_data: bool,
+    pub external_clock: bool,
+    pub external_trigger: bool,
 }
 
 impl ScanOptions {
@@ -42,7 +42,7 @@ pub fn scan_channels<T: core::AInScanner + std::marker::Send + 'static>(mut dev:
     let senders = channels.iter().map(|(tx, _)| tx.clone()).collect::<Vec<_>>();
     let receivers = channels.into_iter().map(|(_, rx)| rx).collect::<Vec<_>>();
 
-    let thread = std::thread::spawn(move || {
+    let handle = std::thread::spawn(move || {
         let mut read_buf = vec![0.0; n_ch];
 
         loop {
@@ -96,5 +96,5 @@ pub fn scan_channels<T: core::AInScanner + std::marker::Send + 'static>(mut dev:
         dev
     });
 
-    Ok((thread, receivers))
+    Ok((handle, receivers))
 }

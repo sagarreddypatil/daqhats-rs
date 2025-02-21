@@ -4,7 +4,6 @@ use daqhats::core::{hat_list, HatId, ScanOptions, ScanStatus, Mcc118, AInScanner
 fn main() -> anyhow::Result<(), anyhow::Error> {
     let avail_devices = hat_list(HatId::Mcc118);
     if avail_devices.len() == 0 {
-        println!("No MCC 118 devices found");
         return Err(anyhow::Error::msg("No MCC 118 devices found"));
     }
 
