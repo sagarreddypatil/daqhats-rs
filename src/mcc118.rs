@@ -47,7 +47,7 @@ impl Mcc118 {
         }
     }
 
-    pub fn blink_led(&self, count: u8) -> Result<(), ErrorCode> {
+    pub fn blink_led(&mut self, count: u8) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_blink_led(self.address, count) };
         result_c_to_rs(res)
     }
@@ -78,18 +78,18 @@ impl Mcc118 {
         result_c_to_rs(res).map(|_| (slope, offset))
     }
 
-    pub fn calibration_coefficient_write(&self, index: u8, slope: f64, offset: f64) -> Result<(), ErrorCode> {
+    pub fn calibration_coefficient_write(&mut self, index: u8, slope: f64, offset: f64) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_calibration_coefficient_write(self.address, index, slope, offset) };
         result_c_to_rs(res)
     }
 
-    pub fn a_in_read(&self, channel: u8, options: ScanOptions) -> Result<f64, ErrorCode> {
+    pub fn a_in_read(&mut self, channel: u8, options: ScanOptions) -> Result<f64, ErrorCode> {
         let mut value = 0.0;
         let res = unsafe { bindings::mcc118_a_in_read(self.address, channel, options.bits(), &mut value) };
         result_c_to_rs(res).map(|_| value)
     }
 
-    pub fn trigger_mode(&self, mode: TriggerMode) -> Result<(), ErrorCode> {
+    pub fn trigger_mode(&mut self, mode: TriggerMode) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_trigger_mode(self.address, mode as u8) };
         result_c_to_rs(res)
     }
@@ -100,7 +100,7 @@ impl Mcc118 {
         result_c_to_rs(res).map(|_| actual_sample_rate)
     }
 
-    pub fn a_in_scan_start(&self, channel_mask: u8, samples_per_channel: u32, sample_rate_per_channel: f64, options: ScanOptions) -> Result<(), ErrorCode> {
+    pub fn a_in_scan_start(&mut self, channel_mask: u8, samples_per_channel: u32, sample_rate_per_channel: f64, options: ScanOptions) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_start(self.address, channel_mask, samples_per_channel, sample_rate_per_channel, options.bits()) };
         result_c_to_rs(res)
     }
@@ -118,10 +118,9 @@ impl Mcc118 {
         result_c_to_rs(res).map(|_| (ScanStatus::from_bits(status).unwrap(), samples))
     }
 
-    pub fn a_in_scan_read(&self, samples_per_channel: i32, timeout_s: f64, buffer: &mut [f64]) -> Result<(ScanStatus, u32), ErrorCode> {
+    pub fn a_in_scan_read(&mut self, samples_per_channel: i32, timeout_s: f64, buffer: &mut [f64]) -> Result<(ScanStatus, u32), ErrorCode> {
         let mut status: u16 = 0;
         let mut samples_read = 0;
-        //  int mcc128_a_in_scan_read(uint8_t address, uint16_t *status, int32_t samples_per_channel, double timeout, double *buffer, uint32_t buffer_size_samples, uint32_t *samples_read_per_channel)
         let res = unsafe {
             bindings::mcc118_a_in_scan_read(
                 self.address,
@@ -145,12 +144,12 @@ impl Mcc118 {
         channel_count as u8
     }
 
-    pub fn a_in_scan_stop(&self) -> Result<(), ErrorCode> {
+    pub fn a_in_scan_stop(&mut self) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_stop(self.address) };
         result_c_to_rs(res)
     }
 
-    pub fn a_in_scan_cleanup(&self) -> Result<(), ErrorCode> {
+    pub fn a_in_scan_cleanup(&mut self) -> Result<(), ErrorCode> {
         let res = unsafe { bindings::mcc118_a_in_scan_cleanup(self.address) };
         result_c_to_rs(res)
     }
@@ -162,6 +161,13 @@ impl Mcc118 {
 
 impl Drop for Mcc118 {
     fn drop(&mut self) {
+        if let Ok(scan_status) = self.a_in_scan_status() {
+            if scan_status.0.contains(ScanStatus::RUNNING) {
+                self.a_in_scan_stop().unwrap();
+            }
+
+            self.a_in_scan_cleanup().unwrap();
+        }
         unsafe { bindings::mcc118_close(self.address) };
     }
 }

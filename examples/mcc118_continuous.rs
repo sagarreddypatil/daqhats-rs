@@ -20,7 +20,7 @@ fn main() -> anyhow::Result<(), anyhow::Error> {
 
     let opts = ScanOptions::CONTINUOUS;
 
-    let dev = Mcc118::open(addr)?;
+    let mut dev = Mcc118::open(addr)?;
     dev.a_in_scan_start(channel_mask, samples_per_channel, scan_rate, opts)?;
 
     println!("Internal data buffer size: {}", dev.a_in_scan_buffer_size()?);
